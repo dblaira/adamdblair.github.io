@@ -143,6 +143,24 @@ li::before{
   font-family:"IBM Plex Mono",monospace;
 }
 .note{max-width:var(--measure);color:var(--ink-soft)}
+
+/* ---- worked example ---- */
+.xform{max-width:52rem;margin-top:.5rem}
+.xrow{padding:1.5rem 0;border-top:1px dashed var(--rule)}
+.xrow:first-child{border-top:0;padding-top:0}
+.xgrid{display:grid;gap:.9rem 1.6rem;grid-template-columns:1fr;margin-top:.9rem}
+@media(min-width:44rem){.xgrid{grid-template-columns:1fr 1fr}}
+.xcell .lab{display:block;margin-bottom:.5rem}
+.mono{
+  font-family:"IBM Plex Mono",monospace;
+  font-size:.855rem;line-height:1.5;
+  padding:.8rem .9rem;
+  border-left:2px solid var(--rule);
+  color:var(--ink-soft);
+}
+.mono.good{border-left-color:var(--pass);color:var(--ink)}
+.xwhy{margin-top:.9rem;font-size:.95em;color:var(--ink-soft);max-width:var(--measure)}
+.xwhy b{font-weight:400;color:var(--violation)}
 footer{padding:2.2rem 0 3rem;border-top:1px solid var(--ink)}
 
 @media (prefers-reduced-motion:reduce){
@@ -186,6 +204,40 @@ footer{padding:2.2rem 0 3rem;border-top:1px solid var(--ink)}
       <span class="lab">Back in 48 hours</span>
     </div>
   </div>
+
+  <section>
+    <h2>What the rewrite actually looks like</h2>
+    <p class="note" style="margin-bottom:2rem">A rule only holds if something can fail. "Be careful" has no failing condition, so the agent is free to believe it complied. These are real rewrites.</p>
+
+    <div class="xform">
+      <div class="xrow">
+        <span class="lab">Rule 01</span>
+        <div class="xgrid">
+          <div class="xcell"><span class="lab">You wrote</span><div class="mono">Write clean, maintainable code.</div></div>
+          <div class="xcell"><span class="lab">It comes back as</span><div class="mono good">No function over 50 lines.<br>No file over 400 lines.<br>Checked on every edit.</div></div>
+        </div>
+        <p class="xwhy"><b>Why it was being ignored:</b> "clean" has no condition that can fail, so every diff technically complied.</p>
+      </div>
+
+      <div class="xrow">
+        <span class="lab">Rule 02</span>
+        <div class="xgrid">
+          <div class="xcell"><span class="lab">You wrote</span><div class="mono">Don't break the existing tests.</div></div>
+          <div class="xcell"><span class="lab">It comes back as</span><div class="mono good">After any edit to src/**,<br>run the suite. A failure<br>blocks the next step.</div></div>
+        </div>
+        <p class="xwhy"><b>Why it was being ignored:</b> it relied on the agent choosing to run tests. Now it cannot proceed without them.</p>
+      </div>
+
+      <div class="xrow">
+        <span class="lab">Rule 03</span>
+        <div class="xgrid">
+          <div class="xcell"><span class="lab">You wrote</span><div class="mono">Always use our design tokens.<br>Never hardcode colors.</div></div>
+          <div class="xcell"><span class="lab">It comes back as</span><div class="mono good">Any hex value outside<br>tokens.css fails the check<br>and names the line.</div></div>
+        </div>
+        <p class="xwhy"><b>Why it was being ignored:</b> "always" and "never" read as encouragement. A grep does not.</p>
+      </div>
+    </div>
+  </section>
 
   <section>
     <h2>What you send, what comes back</h2>

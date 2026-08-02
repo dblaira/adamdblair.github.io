@@ -19,7 +19,10 @@ Nothing claimed. No product exists, no payment rail exists, no buyer contacted.
 
 | Asset | Status | How I verified |
 |-------|--------|----------------|
-| adamdblair.github.io repo | Exists, EMPTY (AGENTS.md only) | `ls -la`, `git log` |
+| **Storefront LIVE** | `https://constraint-layer-site.vercel.app` | `curl` with no cookies → HTTP 200, 8174 bytes, real content served, no name in payload. Verified as an outsider, not from the deploy tool's own claim. |
+| Vercel account | Authenticated as `dblaira` | `vercel whoami` |
+| GitHub CLI | Authenticated as `dblaira`, `repo` scope | `gh auth status` |
+| adamdblair.github.io repo | Exists, EMPTY — abandoned as storefront (URL leaks name) | `ls -la`, `git log` |
 | Stripe account | **EXISTS** — `acct_1TP8n6JgvTCgj6SF` | Dashboard URL supplied by Adam 2026-08-01 |
 | Stripe LIVE mode | **NOT CONFIRMED** — URL contained `/test/` | Test-mode charges are simulated. They are not revenue and can never move to VERIFIED. |
 | Stripe Payment Link | **DOES NOT EXIST** | Adam sent a dashboard URL, not a `buy.stripe.com/...` link |

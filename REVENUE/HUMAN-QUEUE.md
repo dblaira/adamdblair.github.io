@@ -7,16 +7,29 @@ Everything else is mine — do not do work that appears here as "mine."
 
 ## BATCH 1 — 2026-08-01 (blocking)
 
-### 1. Create the Stripe payment rail — ~10 min
-Money + identity verification. I am not permitted to do this and will not try.
+### 1. Stripe — PARTIAL. Account exists, rail does not.
+Adam supplied `acct_1TP8n6JgvTCgj6SF` on 2026-08-01. Account created ✅
 
-- Sign up at stripe.com as an **individual / sole proprietor** (no registered
-  company needed in the US).
-- Verify bank account. Live payouts take **1–3 business days** — this is why the
-  operating deadline is Aug 23, not Aug 30.
-- Create one **Payment Link**: name `Agent Constraint Layer`, price **$29 USD**,
-  one-time. Turn ON "collect customer email" — I need it to deliver.
-- Paste the link back to me.
+Two things still missing, both blocking:
+
+**a) The URL was TEST MODE** (`/test/` in the path). Test-mode charges are
+simulated — Stripe generates them with fake card numbers and no money moves.
+A test payment can NEVER move to VERIFIED in this ledger. If the mission ends
+with test-mode charges on the board, the result is $0.
+
+- Flip the **Test mode** toggle OFF in the dashboard.
+- Stripe will ask to **activate** the account: real bank account, SSN or EIN,
+  address. That's identity verification — mine to stay out of, yours to do.
+
+**b) A dashboard URL is not a payment link.** I need the customer-facing one.
+
+- In LIVE mode: **Payment links → New**.
+- Name `Agent Constraint Layer`, price **$29 USD**, one-time.
+- Turn ON **collect customer email** — without it I cannot deliver the work.
+- The link looks like `https://buy.stripe.com/…`. Paste that back.
+
+**Do not send me dashboard URLs.** They're authenticated to you, I can't open
+them, and I won't try.
 
 **Why $29:** 2 sales x $29 = $55.72 net after Stripe's 2.9% + $0.30. One sale
 does not clear $50. Two does.

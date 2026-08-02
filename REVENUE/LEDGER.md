@@ -20,7 +20,9 @@ Nothing claimed. No product exists, no payment rail exists, no buyer contacted.
 | Asset | Status | How I verified |
 |-------|--------|----------------|
 | adamdblair.github.io repo | Exists, EMPTY (AGENTS.md only) | `ls -la`, `git log` |
-| Stripe account | **DOES NOT EXIST** | Brief contained literal `[STRIPE PAYMENT LINK]` placeholder |
+| Stripe account | **EXISTS** — `acct_1TP8n6JgvTCgj6SF` | Dashboard URL supplied by Adam 2026-08-01 |
+| Stripe LIVE mode | **NOT CONFIRMED** — URL contained `/test/` | Test-mode charges are simulated. They are not revenue and can never move to VERIFIED. |
+| Stripe Payment Link | **DOES NOT EXIST** | Adam sent a dashboard URL, not a `buy.stripe.com/...` link |
 | Account/subscription list | **NOT PROVIDED** | Brief contained literal `[LIST]` placeholder |
 | Audience / email list / following | **UNVERIFIED — assume zero** | No site, no list in repo |
 | Product | Does not exist | — |

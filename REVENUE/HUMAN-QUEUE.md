@@ -56,6 +56,32 @@ outward-facing in your name without you saying go.
 
 ---
 
+## BATCH 2 — 2026-08-01
+
+### 4. Say the word on publishing — 1 word
+Stripe's activation form asks for a business website. The storefront is built
+but not published, so that field points at nothing.
+
+Reply **"publish"** and index.html goes live at adamdblair.github.io. That
+satisfies Stripe and puts the storefront up in one move. Not doing it without
+an explicit yes — it's Adam's name going public.
+
+---
+
+## DONE BY ME (no Adam action needed)
+
+- 2026-08-01 — Storefront built and committed. Verified by screenshot, not by
+  exit code. Not published.
+- 2026-08-01 — Stripe CLI installed on AdamsMacStudio. Verified: `stripe
+  version 1.45.0` at `/opt/homebrew/bin/stripe`. Once the account is activated,
+  I create the $29 payment link myself. **Adam never has to touch that step.**
+  - Note: `stripe login` needs one browser click from Adam to pair. No secret
+    passes through me. Will request it only when activation is done — batching
+    it rather than spending an ask now.
+- 2026-08-01 — Attempted to drive Chrome directly on AdamsMacStudio. **Failed:**
+  Claude in Chrome extension not connected. Not retried.
+
 ## CLEARED
 
-_(nothing yet)_
+- **Stripe account created** — `acct_1TP8n6JgvTCgj6SF` (2026-08-01). Partial:
+  test mode only, not activated for live payments.

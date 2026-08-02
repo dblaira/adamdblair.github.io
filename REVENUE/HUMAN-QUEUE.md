@@ -56,15 +56,31 @@ outward-facing in your name without you saying go.
 
 ---
 
-## BATCH 2 — 2026-08-01
+## BATCH 2 — 2026-08-01 (supersedes item 4 of Batch 1)
 
-### 4. Say the word on publishing — 1 word
-Stripe's activation form asks for a business website. The storefront is built
-but not published, so that field points at nothing.
+**Decision recorded 2026-08-01: Adam will NOT operate under his own name.**
+This kills GitHub Pages as the storefront — `adamdblair.github.io` leaks the
+name in the URL itself. Brand is now **Constraint Layer**.
 
-Reply **"publish"** and index.html goes live at adamdblair.github.io. That
-satisfies Stripe and puts the storefront up in one move. Not doing it without
-an explicit yes — it's Adam's name going public.
+### 4. Put the site online — drag one folder, no account
+A folder is waiting at **`~/Desktop/constraint-layer-site`**.
+
+- Go to **app.netlify.com/drop**
+- Drag the whole `constraint-layer-site` folder onto the page
+- A live URL appears in seconds. **No account, no card, no name.**
+
+Send me the URL.
+
+Caveat: unclaimed sites are deleted after 24 hours. To keep it, sign up free
+and claim it — then the subdomain can be renamed to something like
+`constraintlayer.netlify.app`. Do the drop first; decide about the account
+after seeing it work.
+
+### 5. Not blocking yet — a delivery email
+Buyers pay, then I deliver work to them by email. That email cannot be Adam's
+named personal address. Needs one free neutral inbox under the brand.
+**Do not action this yet** — it isn't blocking until there is a buyer, and I'm
+not spending an ask on it while activation is the critical path.
 
 ---
 

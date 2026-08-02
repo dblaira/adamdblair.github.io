@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Constraint Layer — your agent ignores the rules you already wrote</title>
+<meta name="description" content="Send me the rules your coding agent keeps breaking. I return them as checks it can't skip. $29, back in 48 hours.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&family=IBM+Plex+Mono:wght@400;500&family=Newsreader:opsz,wght@6..72,300;6..72,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#F2F4F3;
+  --paper-2:#E5EAE7;
+  --ink:#14181B;
+  --ink-soft:#4A5459;
+  --rule:#C5CDC9;
+  --violation:#C2371F;
+  --pass:#2F5D50;
+  --measure:66ch;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{
+  background:var(--paper);
+  color:var(--ink);
+  font-family:"Newsreader",Georgia,serif;
+  font-weight:300;
+  font-size:clamp(1.02rem,.55vw + .9rem,1.18rem);
+  line-height:1.6;
+  padding:0 clamp(1.15rem,5vw,3rem);
+}
+.wrap{max-width:74rem;margin:0 auto}
+
+/* ---- utility / instrument type ---- */
+.lab{
+  font-family:"IBM Plex Mono",ui-monospace,monospace;
+  font-size:.685rem;
+  font-weight:500;
+  letter-spacing:.14em;
+  text-transform:uppercase;
+  color:var(--ink-soft);
+}
+h1,h2,h3,.btn{font-family:"Archivo",system-ui,sans-serif}
+
+/* ---- masthead ---- */
+.mast{
+  display:flex;justify-content:space-between;align-items:baseline;
+  gap:1rem;flex-wrap:wrap;
+  padding:1.6rem 0 1.5rem;
+  border-bottom:1px solid var(--ink);
+}
+
+/* ---- hero ---- */
+.hero{padding:clamp(3.2rem,9vw,6.5rem) 0 clamp(2.6rem,6vw,4rem)}
+h1{
+  font-weight:800;
+  font-size:clamp(2.5rem,7.4vw,5.6rem);
+  line-height:.94;
+  letter-spacing:-.033em;
+  max-width:15ch;
+  text-wrap:balance;
+}
+h1 em{font-style:normal;color:var(--violation)}
+.lede{
+  margin-top:1.6rem;
+  max-width:var(--measure);
+  font-size:1.14em;
+  color:var(--ink-soft);
+}
+.lede strong{font-weight:400;color:var(--ink)}
+
+/* ---- SIGNATURE: specimen ---- */
+.specimen{
+  margin-top:clamp(2.4rem,6vw,3.6rem);
+  max-width:42rem;
+  border:1px solid var(--ink);
+  background:var(--paper-2);
+}
+.specimen-hd{
+  display:flex;justify-content:space-between;gap:1rem;
+  padding:.62rem .95rem;
+  border-bottom:1px solid var(--ink);
+}
+.specimen-rule{
+  font-family:"IBM Plex Mono",monospace;
+  font-size:clamp(.86rem,2.1vw,1rem);
+  padding:1.15rem .95rem;
+  border-bottom:1px dashed var(--rule);
+}
+.row{
+  display:grid;
+  grid-template-columns:1fr auto;
+  align-items:center;
+  gap:1rem;
+  padding:.85rem .95rem;
+}
+.row + .row{border-top:1px dashed var(--rule)}
+.row .lab{color:var(--ink)}
+.stamp{
+  font-family:"IBM Plex Mono",monospace;
+  font-size:.7rem;font-weight:500;
+  letter-spacing:.16em;
+  padding:.4rem .7rem;
+  border:2px solid currentColor;
+  white-space:nowrap;
+  opacity:0;
+  transform:rotate(-3.5deg) scale(1.5);
+}
+.stamp.fail{color:var(--violation)}
+.stamp.ok{color:var(--pass)}
+.stamp.on{animation:land .42s cubic-bezier(.2,.9,.3,1) forwards}
+@keyframes land{to{opacity:1;transform:rotate(-3.5deg) scale(1)}}
+
+/* ---- cta ---- */
+.cta{display:flex;align-items:center;gap:1.15rem;flex-wrap:wrap;margin-top:2.2rem}
+.btn{
+  display:inline-block;
+  background:var(--ink);color:var(--paper);
+  font-weight:700;font-size:1.05rem;letter-spacing:-.01em;
+  padding:.92rem 1.7rem;
+  text-decoration:none;
+  border:2px solid var(--ink);
+  transition:background .15s,color .15s;
+}
+.btn:hover,.btn:focus-visible{background:var(--violation);border-color:var(--violation);color:#fff}
+:focus-visible{outline:2px solid var(--violation);outline-offset:3px}
+
+/* ---- sections ---- */
+section{padding:clamp(2.6rem,6vw,4.2rem) 0;border-top:1px solid var(--ink)}
+h2{
+  font-weight:700;font-size:clamp(1.45rem,3.1vw,2rem);
+  letter-spacing:-.02em;line-height:1.1;margin-bottom:1.4rem;
+}
+.cols{display:grid;gap:clamp(1.6rem,4vw,2.8rem);grid-template-columns:repeat(auto-fit,minmax(15rem,1fr))}
+.field .lab{display:block;padding-bottom:.5rem;margin-bottom:.75rem;border-bottom:1px solid var(--rule)}
+.field p{color:var(--ink-soft)}
+ul{list-style:none;max-width:var(--measure)}
+li{padding:.72rem 0 .72rem 1.6rem;border-top:1px dashed var(--rule);position:relative;color:var(--ink-soft)}
+li:first-child{border-top:0}
+li::before{
+  content:"—";position:absolute;left:0;color:var(--violation);
+  font-family:"IBM Plex Mono",monospace;
+}
+.note{max-width:var(--measure);color:var(--ink-soft)}
+footer{padding:2.2rem 0 3rem;border-top:1px solid var(--ink)}
+
+@media (prefers-reduced-motion:reduce){
+  .stamp{opacity:1;transform:rotate(-3.5deg)}
+  .stamp.on{animation:none}
+  *{transition:none!important}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="mast">
+    <span class="lab">Adam Blair — Constraint Layer</span>
+    <span class="lab">Built to order · $29</span>
+  </header>
+
+  <div class="hero">
+    <h1>Your agent ignores the rules you <em>already wrote.</em></h1>
+    <p class="lede">You put them in <strong>CLAUDE.md</strong>. It obeys for three turns, then quietly stops — and you find out in the diff. Send me the rules it keeps breaking. I'll send back the same rules written as checks it can't skip.</p>
+
+    <!-- SIGNATURE ELEMENT -->
+    <div class="specimen">
+      <div class="specimen-hd">
+        <span class="lab">Specimen</span>
+        <span class="lab">Rule 04</span>
+      </div>
+      <div class="specimen-rule">"Never commit directly to main."</div>
+      <div class="row">
+        <span class="lab">As you wrote it</span>
+        <span class="stamp fail" data-delay="500">Ignored</span>
+      </div>
+      <div class="row">
+        <span class="lab">As it comes back</span>
+        <span class="stamp ok" data-delay="1050">Enforced</span>
+      </div>
+    </div>
+
+    <div class="cta">
+      <a class="btn" href="STRIPE_PAYMENT_LINK_PENDING">Buy — $29</a>
+      <span class="lab">Back in 48 hours</span>
+    </div>
+  </div>
+
+  <section>
+    <h2>What you send, what comes back</h2>
+    <div class="cols">
+      <div class="field">
+        <span class="lab">You send</span>
+        <p>A link to your repo, and the rules your agent keeps breaking — in your own words. No format required.</p>
+      </div>
+      <div class="field">
+        <span class="lab">You get back</span>
+        <p>Your rules rewritten as conditions that either hold or fail, the wiring that loads them every session, and a one-page map of which check catches which failure.</p>
+      </div>
+      <div class="field">
+        <span class="lab">Terms</span>
+        <p>$29, one time. Delivered by email within 48 hours. If I can't make your rules enforceable, I say so and refund you.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Don't buy this if</h2>
+    <ul>
+      <li>You want a general starter template. Several good ones already exist and cost less than this. This is your rules, not a starter kit.</li>
+      <li>Your rules are matters of taste. Enforcement needs a condition that can fail — "write clean code" can't, "no file over 400 lines" can.</li>
+      <li>You haven't written the rules down yet. Write them badly first, then send them. Badly is fine. Absent isn't.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Why it's $29</h2>
+    <p class="note">Because this is new and there's no wall of testimonials to point at. You'd be early, and the price says so. The refund line above is the whole guarantee — if your rules can't be made enforceable, you don't pay for me finding that out.</p>
+    <div class="cta">
+      <a class="btn" href="STRIPE_PAYMENT_LINK_PENDING">Buy — $29</a>
+      <span class="lab">One time · No subscription</span>
+    </div>
+  </section>
+
+  <footer>
+    <span class="lab">Adam Blair · adamdblair.github.io</span>
+  </footer>
+
+</div>
+<script>
+  const stamps = document.querySelectorAll('.stamp');
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    stamps.forEach(s => s.classList.add('on'));
+  } else {
+    stamps.forEach(s => setTimeout(() => s.classList.add('on'), +s.dataset.delay));
+  }
+</script>
+</body>
+</html>

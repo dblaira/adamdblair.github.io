@@ -50,11 +50,19 @@ measure whether the degradation *slope* changes. Design: `RESEARCH/THESIS.md` §
 
 | Thing | Where | Evidence |
 |-------|-------|----------|
-| Two working enforcement hooks | `REVENUE/DELIVERABLE/hooks/` | 9/9 behavioural tests pass — deny path, silent paths, skip patterns, env override, missing file |
+| **Four** working enforcement hooks | `REVENUE/DELIVERABLE/hooks/` | `bash REVENUE/DELIVERABLE/tests/run-tests.sh` → **27 passed, 0 failed**. The suite is now committed — run it yourself. |
+| Degradation instrument | `RESEARCH/tools/degrade_metrics.py` | `python3 RESEARCH/tools/test_degrade_metrics.py` → **21 passed, 0 failed**, including separation of a known-degrading from a known-stable synthetic series |
+| Human-repo baseline (A1) | `RESEARCH/RESULTS-BASELINE.md`, `RESEARCH/results/*.json` | 6 repos × 12 checkpoints from real git history; erosion flat (median −0.13%/cp) while size grew +5.3%/cp |
 | `claim-audit.py` | `RESEARCH/tools/` | Run on this session's own transcript: 56 claims, 11.3% bare, 47.2% cited |
 | Live storefront | https://constraint-layer-site.vercel.app | `curl` no cookies → HTTP 200, content served, no name leak |
 | 31-project portfolio | `RESEARCH/PORTFOLIO.md` | — |
 | Thesis | `RESEARCH/THESIS.md` | — |
+
+**Note on the old "9/9 tests pass" claim (2026-08-03):** those tests were run
+ad-hoc and never committed, so the claim was unreproducible — exactly the failure
+mode this project exists to catch. The suite now ships in
+`REVENUE/DELIVERABLE/tests/` and covers all four hooks. It found one real defect
+on first run.
 
 ## 5. What is NOT true (do not repeat these)
 
@@ -99,10 +107,39 @@ at session start if on Adam's machine. Otherwise the load-bearing ones:
 
 ## 9. Next actions
 
-1. **B11** — finish the structural-discipline hook suite (complexity ceiling and
-   duplication detector; file-size limit already built)
-2. **A1** — package the degradation metrics so a slope can be measured
-3. **B1** — run the flagship experiment
-4. `claim-audit` v2 — scope to first-person claims, separate *unchecked* from
+- ~~**B11** — structural-discipline hook suite~~ **DONE 2026-08-07.**
+  `max-complexity.sh` (cyclomatic ceiling) and `no-duplication.sh` (clone
+  detector, file and repo scope) shipped, plus a committed test suite for all
+  four hooks. Every tool in this repo passes its own hooks.
+- ~~**A1** — package the degradation metrics so a slope can be measured~~
+  **DONE 2026-08-07.** `degrade_metrics.py` fits slopes from git history or from
+  snapshot directories, and compares two arms with a permutation test.
+  Calibrated against synthetic ground truth and validated against six
+  human-maintained repos. See `RESEARCH/RESULTS-BASELINE.md`.
+
+1. **B1 — run the flagship experiment.** This is now the only thing standing
+   between us and the result. Everything it needs exists and is tested. Two
+   decisions must be made *before* collecting data, not after:
+   - **What is a checkpoint?** Per commit, per task iteration, or per tool call.
+     Pick one and write it down first.
+   - **Duplication has a positive human baseline** (median +2.68%/cp). An agent
+     arm with rising duplication is not a finding on its own. Only a slope
+     steeper than baseline counts.
+2. Widen the human corpus past six repos so the baseline carries a permutation
+   test on its own strength.
+3. `claim-audit` v2 — scope to first-person claims, separate *unchecked* from
    *unknowable*. The precision limit found in v1 is itself the research question:
    **which claims is an agent even entitled to make?**
+
+## 10. Known limits of what was built (do not oversell these)
+
+- The complexity and duplication hooks parse **Python only**. Other languages
+  pass through silently.
+- Our metric definitions are **ours, not SlopCodeBench's**. We measure the same
+  direction, not the same scalar. Do not present a slope here as comparable to a
+  slope in that paper.
+- `max_complexity` is in the JSON but is **not a degradation metric** — it is an
+  extreme-value statistic that grows with codebase size. It looked like a strong
+  signal until the maturity window was applied, then went flat.
+- The baseline is six small-to-mid Python libraries from two maintainer
+  communities. It is not a general claim about human code.

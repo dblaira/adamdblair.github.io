@@ -3,7 +3,14 @@
 Rule: nothing moves to VERIFIED without the external system's own record.
 A return code is not evidence. See: requirement-is-the-test.
 
-Last updated: 2026-08-01
+Last updated: 2026-08-07
+
+> **STATUS: the revenue mission was superseded by the CEO on 2026-08-03.** See
+> `HANDOFF.md` §1. Revenue is **$0.00** and will stay $0.00 — no payment rail was
+> ever activated, and none is being pursued. This file is kept as the honest
+> record of that outcome, not as a live target. The CLAIMED/VERIFIED discipline
+> moved to research claims, where it is still enforced; the current verified
+> ledger is `HANDOFF.md` §4 and `RESEARCH/RESULTS-BASELINE.md` §6.
 
 ## VERIFIED — $0.00
 

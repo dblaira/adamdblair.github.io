@@ -1,5 +1,5 @@
 {
-  "_comment": "Merge the 'hooks' block into your .claude/settings.json. Scripts must be chmod +x.",
+  "_comment": "Merge the 'hooks' block into your .claude/settings.json. Scripts must be chmod +x. Copy hooks/lib/ too — the last two hooks need it.",
   "hooks": {
     "PreToolUse": [
       {
@@ -19,6 +19,14 @@
           {
             "type": "command",
             "command": "${CLAUDE_PROJECT_DIR}/.claude/hooks/max-file-lines.sh"
+          },
+          {
+            "type": "command",
+            "command": "${CLAUDE_PROJECT_DIR}/.claude/hooks/max-complexity.sh"
+          },
+          {
+            "type": "command",
+            "command": "${CLAUDE_PROJECT_DIR}/.claude/hooks/no-duplication.sh"
           }
         ]
       }

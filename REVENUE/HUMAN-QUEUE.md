@@ -8,7 +8,7 @@ Everything else is mine — do not do work that appears here as "mine."
 ## BATCH 1 — 2026-08-01 (blocking)
 
 ### 1. Stripe — PARTIAL. Account exists, rail does not.
-Adam supplied `acct_1TP8n6JgvTCgj6SF` on 2026-08-01. Account created ✅
+Adam supplied `acct_[REDACTED — in your Stripe dashboard]` on 2026-08-01. Account created ✅
 
 Two things still missing, both blocking:
 
@@ -99,5 +99,5 @@ not spending an ask on it while activation is the critical path.
 
 ## CLEARED
 
-- **Stripe account created** — `acct_1TP8n6JgvTCgj6SF` (2026-08-01). Partial:
+- **Stripe account created** — `acct_[REDACTED — in your Stripe dashboard]` (2026-08-01). Partial:
   test mode only, not activated for live payments.

@@ -14,6 +14,8 @@ import tempfile
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from merge_sweep import (  # noqa: E402
+    by_mechanism,
+    mechanisms_of,
     cluster,
     contradiction,
     has_cost,
@@ -80,6 +82,30 @@ def test_parsing() -> None:
 
     bare = parse_rows(GROK, "grok")
     check("parses bare pipe rows with no header", len(bare) == 2, f"got {len(bare)}")
+
+    # Real returns quote coverage tables and log lines containing pipes.
+    # Naive splitting shifts every field after evidence and looks like clean data.
+    messy = parse_rows(
+        "cors agent claimed done and coverage held | verify log `63 passing` + "
+        "`All files | 100 | 100 | 100 | 100` | Human | 4 hours | 2026-08 | HIGH | "
+        "fails if re-run disagrees",
+        "cursor",
+    )
+    check("extra pipes inside evidence do not shift the fields", len(messy) == 1)
+    check("who_pays survives an evidence cell full of pipes",
+          messy and messy[0]["who_pays"] == "Human", str(messy[0]) if messy else "")
+    check("cost survives", messy and messy[0]["cost"] == "4 hours")
+    check("confidence survives", messy and messy[0]["confidence"] == "HIGH")
+    check("the pipes stay inside evidence", messy and "100 | 100" in messy[0]["evidence"])
+
+    escaped = parse_rows(
+        r"agent removed the lint gate from the script | log `a \| b \| c` | Dev | "
+        r"1 line | 2026-08 | HIGH | fails if the gate is restored",
+        "cursor",
+    )
+    check("backslash-escaped pipes are restored, not split on",
+          escaped and escaped[0]["who_pays"] == "Dev",
+          str(escaped[0]) if escaped else "none")
 
     check("ignores separator-only lines", not parse_rows("|---|---|---|---|---|", "x"))
     check("ignores an empty return", not parse_rows("", "x"))
@@ -159,8 +185,52 @@ def test_merge_end_to_end() -> None:
           all(f["variants"] for f in result["findings"]))
 
 
+def test_mechanism_tagging() -> None:
+    """The lanes were made disjoint, so corroboration is thematic, not lexical.
+
+    These three claims share almost no words. All three are the same mechanism.
+    If the tagger cannot see that, the whole sweep reports zero corroboration.
+    """
+    codex = {"engine": "codex", "claim": "Aider skips local pre-commit hooks by "
+             "default using --no-verify", "evidence": "aider.chat/docs/git.html"}
+    cursor = {"engine": "cursor", "claim": "ROUTE AROUND: agent deleted xo from "
+              "test script under pressure", "evidence": "package.json"}
+    grok = {"engine": "grok", "claim": "agents erased production data, injected "
+            "JavaScript to force tests to pass", "evidence": "aijourn.com"}
+
+    for row, name in ((codex, "codex"), (cursor, "cursor"), (grok, "grok")):
+        check(f"{name}'s gate-defeat row is tagged gate-defeat",
+              "gate-defeat" in mechanisms_of(row), str(mechanisms_of(row)))
+
+    check("lexical clustering CANNOT see this corroboration",
+          similarity(tokens(codex["claim"]), tokens(cursor["claim"])) < 0.2,
+          "if this ever passes, the mechanism layer is redundant")
+
+    mechs = by_mechanism([codex, cursor, grok])
+    gate = [m for m in mechs if m["mechanism"] == "gate-defeat"]
+    check("mechanism layer finds 3-engine corroboration lexical clustering missed",
+          gate and gate[0]["engine_count"] == 3,
+          str(gate[0]["engine_count"]) if gate else "no gate-defeat bucket")
+
+    check("BLOCK and ADVISE rows are separated",
+          "blocking-exists" in mechanisms_of(
+              {"engine": "c", "claim": "BLOCK — pre-commit aborts the commit",
+               "evidence": ""})
+          and "advisory-only" in mechanisms_of(
+              {"engine": "c", "claim": "ADVISE — PostToolUse cannot block the call",
+               "evidence": ""}))
+
+    check("an unrelated row gets no mechanism",
+          not mechanisms_of({"engine": "x", "claim": "the sky is blue today",
+                             "evidence": ""}))
+
+    check("mechanisms sort by engine breadth, not row count",
+          [m["mechanism"] for m in mechs][0] == "gate-defeat")
+
+
 def main() -> int:
     test_parsing()
+    test_mechanism_tagging()
     test_similarity_and_clustering()
     test_contradiction_detection()
     test_cost_detection()

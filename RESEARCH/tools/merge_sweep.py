@@ -52,9 +52,65 @@ NEGATION = re.compile(
 
 _ROW_NOISE = re.compile(r"^[\s|:-]*$")
 
+# Why this layer exists: the four lanes were deliberately made non-overlapping,
+# so two engines describing the SAME failure mechanism share almost no
+# vocabulary ("deleted xo from the test script" vs "skips pre-commit hooks by
+# default"). Lexical clustering scores that pair at ~0. Corroboration in this
+# sweep is thematic, not lexical, so it has to be counted at the mechanism
+# level. Keyword rules keep it reproducible instead of a judgement call.
+MECHANISMS = {
+    "gate-defeat": r"route.?around|bypass|--no-verify|no_verify|skip.?(hook|gate|ci)|"
+                   r"eslint-disable|this\.skip|disabl(e|ed|ing) (the )?(lint|check|gate)|"
+                   r"remov(e|ed) .{0,20}(gate|lint|check)|force tests to pass|"
+                   r"deleted xo|ignored a code freeze",
+    "false-green": r"false green|green lies|still (green|passes)|pass(es|ed)? (despite|while)|"
+                   r"camouflage|pending|exit(s)? (code )?0 (but|while|despite)|"
+                   r"mask|incomplete (api|feature)|dead code passes|silent failure",
+    "no-external-check": r"no external|nobody check|until a human|never executed|"
+                         r"not (executed|run|checked)|agent-narrated|self-report|"
+                         r"zero review|no human|unreviewed|without .{0,15}review",
+    "advisory-only": r"^ADVISE|advisory|cannot (block|undo|prevent)|does not (block|fail|"
+                     r"prevent|enforce)|not (a|an) (enforcement|gate)|can't block|"
+                     r"only .{0,12}(advises|comment|report)|is observability",
+    "blocking-exists": r"^BLOCK|blocks? (the )?(merge|commit|action|pr)|prevents? (merging|"
+                       r"the task|completion)|aborts? the commit|deny the|rejected|"
+                       r"hard block|exit code 2",
+    "provenance-gap": r"provenance|attestation|trailer|co-authored|signature|authorship|"
+                      r"claim, not proof|traceability, not",
+    "destructive": r"delet(e|ed)|destro(y|yed|uctive)|eras(e|ed)|wiped|dropped .{0,10}database|"
+                   r"lost .{0,15}(work|progress|data)|recreate the environment",
+    "defect-rate": r"\d+(\.\d+)?x more|vulnerab|security (flaw|finding|smell)|owasp|"
+                   r"bugs per|more (major )?issues|exploitable|hallucinat",
+    "review-tax": r"review (time|tax|backlog)|debug(ging)? .{0,20}(longer|time|hours)|"
+                  r"\d+ ?h(ours|rs)? (debug|lost|wasted)|slower|produced:read|"
+                  r"redeploy|backlog|verification",
+    "cost-blowup": r"\$\d|token fees|credits?|budget|bill(s|ing)? |per (month|engineer)|"
+                   r"spend|25x|allowance",
+    "trust-collapse": r"trust|confidence|distrust|banned|ban(s|ned)? .{0,20}(claude|copilot|"
+                      r"cursor)|restricted|cancelled|resignation",
+}
+_COMPILED = {k: re.compile(v, re.I) for k, v in MECHANISMS.items()}
+
+
+_ESCAPED_PIPE = "\x00PIPE\x00"
+
 
 def _clean(cell: str) -> str:
-    return cell.strip().strip("*`").strip()
+    return cell.strip().strip("*`").strip().replace(_ESCAPED_PIPE, "|")
+
+
+def _align(parts: list[str]) -> dict[str, str]:
+    """Map cells to fields, tolerating extra pipes inside the evidence cell.
+
+    Engines quote log lines and coverage tables that themselves contain pipes
+    (`All files | 100 | 100`). The first cell is always the claim and the last
+    five are always the tail fields, so anything extra belongs to evidence.
+    Splitting naively would shift WHO PAYS into COST and silently corrupt every
+    field after it — the failure would look like clean data.
+    """
+    if len(parts) > len(FIELDS):
+        parts = [parts[0], " | ".join(parts[1:-5]), *parts[-5:]]
+    return dict(zip(FIELDS, parts + [""] * len(FIELDS)))
 
 
 def parse_rows(text: str, engine: str) -> list[dict[str, Any]]:
@@ -64,14 +120,14 @@ def parse_rows(text: str, engine: str) -> list[dict[str, Any]]:
         line = raw.strip()
         if not line or _ROW_NOISE.match(line):
             continue
-        line = line.strip("|")
+        line = line.replace(r"\|", _ESCAPED_PIPE).strip("|")
         parts = [_clean(p) for p in line.split("|")]
         if len(parts) < 5:
             continue
         # A markdown header row repeats the field names; skip it.
         if parts[0].upper().startswith("CLAIM"):
             continue
-        row = dict(zip(FIELDS, parts + [""] * len(FIELDS)))
+        row = _align(parts)
         if len(row["claim"]) < 12:  # not a real claim
             continue
         row["engine"] = engine
@@ -109,6 +165,20 @@ def cluster(rows: list[dict[str, Any]], threshold: float) -> list[list[dict[str,
             clusters.append([row])
             keys.append(tok)
     return clusters
+
+
+# A search-engine query is not a citation. An engine that returns one has not
+# read the source it is quoting, so the quote itself is unverifiable.
+SEARCH_LINK = re.compile(r"(google|bing|duckduckgo)\.[a-z.]+/(search|url)\?", re.I)
+
+
+def citation_quality(row: dict[str, Any]) -> str:
+    ev = row.get("evidence", "")
+    if SEARCH_LINK.search(ev):
+        return "search-link"
+    if "http" in ev or "doi.org" in ev:
+        return "cited"
+    return "uncited"
 
 
 def has_cost(row: dict[str, Any]) -> bool:
@@ -152,6 +222,39 @@ def summarize(group: list[dict[str, Any]]) -> dict[str, Any]:
     }
 
 
+def mechanisms_of(row: dict[str, Any]) -> list[str]:
+    """Which failure mechanisms this row is evidence for. May be several."""
+    text = f"{row.get('claim','')} {row.get('evidence','')}"
+    return [name for name, rx in _COMPILED.items() if rx.search(text)]
+
+
+def by_mechanism(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Corroboration counted where it actually lives: the mechanism."""
+    buckets: dict[str, list[dict[str, Any]]] = {name: [] for name in MECHANISMS}
+    for row in rows:
+        for name in mechanisms_of(row):
+            buckets[name].append(row)
+
+    out = []
+    for name, hits in buckets.items():
+        if not hits:
+            continue
+        engines = sorted({r["engine"] for r in hits})
+        out.append({
+            "mechanism": name,
+            "engines": engines,
+            "engine_count": len(engines),
+            "rows": len(hits),
+            "with_cost": sum(1 for r in hits if has_cost(r)),
+            "per_engine": {e: sum(1 for r in hits if r["engine"] == e) for e in engines},
+            "examples": [
+                {"engine": r["engine"], "claim": r["claim"][:150]} for r in hits[:4]
+            ],
+        })
+    out.sort(key=lambda m: (m["engine_count"], m["rows"]), reverse=True)
+    return out
+
+
 def merge(files: list[str], threshold: float) -> dict[str, Any]:
     rows: list[dict[str, Any]] = []
     per_engine: dict[str, int] = {}
@@ -172,7 +275,16 @@ def merge(files: list[str], threshold: float) -> dict[str, Any]:
         "clusters": len(groups),
         "contradictions": sum(1 for g in groups if g["contradiction"]),
         "corroborated_2plus": sum(1 for g in groups if g["corroboration"] >= 2),
-        "unsourced": sum(1 for r in rows if "http" not in r.get("evidence", "")),
+        "unsourced": sum(1 for r in rows if citation_quality(r) == "uncited"),
+        "search_links": sum(1 for r in rows if citation_quality(r) == "search-link"),
+        "citation_by_engine": {
+            e: {
+                q: sum(1 for r in rows if r["engine"] == e and citation_quality(r) == q)
+                for q in ("cited", "search-link", "uncited")
+            }
+            for e in sorted({r["engine"] for r in rows})
+        },
+        "mechanisms": by_mechanism(rows),
         "findings": groups,
     }
 

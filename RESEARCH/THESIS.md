@@ -42,6 +42,15 @@ improving. Correctly killed.
 
 ## 2. The empirical finding that makes this concrete
 
+> **UNVERIFIED — flagged 2026-08-08.** Every SlopCodeBench figure quoted below
+> came from a summary, not from the paper. A four-engine sweep returned
+> *different* numbers for the same paper (erosion 77% not 80%, verbosity 75.5%
+> not 89.8%, solve rate 14.8% not 17.2%, and a 473-repo human comparison we had
+> not recorded at all). `arxiv.org`, `export.arxiv.org`, `huggingface.co` and
+> `api.semanticscholar.org` are all blocked by this container's egress proxy, so
+> neither set of numbers has been checked against the source. **Read the paper
+> before quoting any figure in this section.** See `RESEARCH/sweep/ADJUDICATION.md` §II.
+
 **SlopCodeBench** (arXiv 2603.24755) measured how coding agents degrade across
 long-horizon iterative tasks — 20 problems, 93 checkpoints, 11 models.
 

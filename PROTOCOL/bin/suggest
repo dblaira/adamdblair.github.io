@@ -1,0 +1,65 @@
+#!/bin/bash
+# The channel that replaces the question.
+#
+# RULE (Journal, Aug 1 2026): "Suggestions to inform and easily ignore"
+#
+# A suggestion is not a question wearing a hat. It states a thing, says why in
+# one line, and requires no reply. Ignoring it must cost nothing — so this
+# refuses to write anything ending in a question mark, and refuses anything
+# long enough to need reading twice.
+#
+#   suggest "Ship the duplication hook at 8 lines, not 6" \
+#           --why "6 fires on legitimate boilerplate in Django settings"
+#
+# Configure: SUGGESTIONS_FILE (default ./SUGGESTIONS.md), MAX_WORDS (default 20)
+
+set -euo pipefail
+
+FILE="${SUGGESTIONS_FILE:-SUGGESTIONS.md}"
+MAX="${MAX_WORDS:-20}"
+
+TEXT="${1:-}"
+WHY=""
+shift || true
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --why) WHY="${2:-}"; shift 2 ;;
+    *) shift ;;
+  esac
+done
+
+if [ -z "$TEXT" ]; then
+  echo "usage: suggest \"the thing\" [--why \"one line\"]" >&2
+  exit 64
+fi
+
+# A suggestion that asks something is a question that dodged the gate.
+case "$TEXT" in
+  *\?) echo "Rejected: a suggestion cannot be a question. Decide it, then state it." >&2
+       exit 2 ;;
+esac
+
+WORDS=$(printf '%s' "$TEXT" | wc -w | tr -d ' ')
+if [ "$WORDS" -gt "$MAX" ]; then
+  echo "Rejected: $WORDS words (limit $MAX). If it needs more, it is not ignorable." >&2
+  exit 2
+fi
+
+if [ ! -f "$FILE" ]; then
+  {
+    echo "# Suggestions"
+    echo
+    echo "Things decided and acted on. Listed so you know, not so you reply."
+    echo "**Ignoring every line here costs you nothing.** Nothing below is blocked"
+    echo "on you, and nothing below is waiting for an answer."
+    echo
+  } >"$FILE"
+fi
+
+DATE=$(date +%Y-%m-%d)
+{
+  printf -- '- **%s** — %s\n' "$DATE" "$TEXT"
+  [ -n "$WHY" ] && printf -- '  - why: %s\n' "$WHY"
+} >>"$FILE"
+
+echo "logged to $FILE"
